@@ -3,11 +3,8 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Main.java to edit this template
  */
 package proyectofinal;
+import javax.swing.JOptionPane;
 
-/**
- *
- * @author Sebastian
- */
 public class ProyectoFinal {
 
     /**
@@ -17,8 +14,8 @@ public class ProyectoFinal {
     // Crear juego y comenzar partida
     Juego game = new Juego();
     String[] playerTroopTypes = {"archer", "knight", "wizard"};
-    int[] playerTroopQuantities = {10, 5, 3};
-    game.start(playerTroopTypes, playerTroopQuantities);
+    //int[] playerTroopQuantities = {10, 5, 3};
+    game.start(playerTroopTypes);
 
     // Imprimir información de los castillos y tropas después de la partida
     System.out.println("Información del castillo del jugador:");

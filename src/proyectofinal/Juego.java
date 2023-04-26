@@ -3,16 +3,14 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
 package proyectofinal;
-
-/**
- *
- * @author Sebastian
- */
+import javax.swing.JOptionPane;
 public class Juego {
     private Castle playerCastle;
     private Castle enemyCastle;
     private int waveNumber;
     private boolean isPlayerTurn;
+    private Troop[] playerTroops;
+    private Troop[] enemyTroops;
     
 
     
@@ -31,29 +29,29 @@ public int getEnemyCastleHealth() {
 }
 
 public String getEnemyTroopInfo() {
-    String info = "";
-        Iterable<Troop> EnemyTroops = null;
-    for (Troop troop : EnemyTroops) {
-        info += troop.getDescription() + "\n";
-        
-       
+        String info = "";
+        for (Troop troop : enemyTroops) { // Modificar esta línea
+            info += troop.getDescription() + "\n";
+        }
+        return info;
     }
-
-    return info;
-
-}
-    public void start(String[] playerTroopTypes, int[] playerTroopQuantities) {
-        Troop[] playerTroops = createTroops(playerTroopTypes, playerTroopQuantities);
-        Troop[] enemyTroops = createEnemyTroops(waveNumber);
+   public void start(String[] playerTroopTypes) {
+    while (playerCastle.getHealth() > 0 && enemyCastle.getHealth() > 0) {
+        int maxTroopQuantity = waveNumber + 4;
+        int[] playerTroopQuantities = getPlayerTroopQuantities(playerTroopTypes, maxTroopQuantity);
+        playerTroops = createTroops(playerTroopTypes, playerTroopQuantities);
+        enemyTroops = createEnemyTroops(waveNumber);
 
         while (playerCastle.getHealth() > 0 && enemyCastle.getHealth() > 0) {
             if (isPlayerTurn) {
-                playerTurn(playerTroops, enemyCastle, playerTroopQuantities);
+                playerTurn(playerTroops, enemyCastle);
             } else {
                 enemyTurn(enemyTroops, playerCastle);
             }
             isPlayerTurn = !isPlayerTurn;
         }
+
+        waveNumber++; // Incrementar el número de oleada al final de cada ronda
 
         if (playerCastle.getHealth() == 0) {
             System.out.println("¡Has perdido! El castillo del enemigo ha sobrevivido.");
@@ -61,6 +59,29 @@ public String getEnemyTroopInfo() {
             System.out.println("¡Has ganado! El castillo del enemigo ha sido destruido.");
         }
     }
+}
+
+private int[] getPlayerTroopQuantities(String[] playerTroopTypes, int maxTroopQuantity) {
+    int[] playerTroopQuantities = new int[playerTroopTypes.length];
+    int totalTroops = 0;
+
+    for (int i = 0; i < playerTroopTypes.length; i++) {
+        String message = "Por favor, ingresa la cantidad de " + playerTroopTypes[i] + " (0 a " + (maxTroopQuantity - totalTroops) + "):";
+        String input = JOptionPane.showInputDialog(message);
+        int quantity = Integer.parseInt(input);
+
+        while (quantity < 0 || quantity > maxTroopQuantity - totalTroops) {
+            message = "Cantidad inválida. Por favor, ingresa la cantidad de " + playerTroopTypes[i] + " (0 a " + (maxTroopQuantity - totalTroops) + "):";
+            input = JOptionPane.showInputDialog(message);
+            quantity = Integer.parseInt(input);
+        }
+
+        playerTroopQuantities[i] = quantity;
+        totalTroops += quantity;
+    }
+
+    return playerTroopQuantities;
+}
 
     private Troop[] createTroops(String[] troopTypes, int[] troopQuantities) {
         Troop[] troops = new Troop[troopTypes.length];
@@ -98,23 +119,54 @@ public String getEnemyTroopInfo() {
     return enemyTroops;
 }
 
-    private void playerTurn(Troop[] playerTroops, Castle enemyCastle, int[] troopQuantities) {
+  private void playerTurn(Troop[] playerTroops, Castle enemyCastle) {
     // Se muestra la información del castillo del jugador y del enemigo
     System.out.println("Castillo del jugador: " + playerCastle.getHealth() + " puntos de vida");
     System.out.println("Castillo del enemigo: " + enemyCastle.getHealth() + " puntos de vida");
 
     // Se muestra la información de las tropas del jugador
     System.out.println("Tropas del jugador:");
-    for (Troop troop : playerTroops) {
+    for (int i = 0; i < playerTroops.length; i++) {
+        System.out.println((i+1) + ". " + playerTroops[i].getDescription());
+    }
+
+    // Seleccionar tropas para el ataque
+    int selectedTroopIndex = -1;
+    while (selectedTroopIndex < 0 || selectedTroopIndex >= playerTroops.length) {
+        String userInput = JOptionPane.showInputDialog("Elija el número de la tropa que desea enviar al ataque (1 - " + playerTroops.length + "):");
+        selectedTroopIndex = Integer.parseInt(userInput) - 1;
+        if (selectedTroopIndex < 0 || selectedTroopIndex >= playerTroops.length) {
+            JOptionPane.showMessageDialog(null, "Entrada inválida, por favor ingrese un número válido.");
+        }
+    }
+
+    // Atacar al castillo enemigo con las tropas seleccionadas
+    playerTroops[selectedTroopIndex].attack(enemyCastle, playerTroops[selectedTroopIndex].getQuantity());
+}
+   private void enemyTurn(Troop[] enemyTroops, Castle playerCastle) {
+    // Se muestra la información del castillo del jugador y del enemigo
+    System.out.println("Castillo del jugador: " + playerCastle.getHealth() + " puntos de vida");
+    System.out.println("Castillo del enemigo: " + enemyCastle.getHealth() + " puntos de vida");
+
+    // Se muestra la información de las tropas del enemigo
+    System.out.println("Tropas del enemigo:");
+    for (Troop troop : enemyTroops) {
         System.out.println(troop.getDescription());
     }
 
-    // Se ataca al castillo enemigo con las tropas seleccionadas
-    for (int i = 0; i < playerTroops.length; i++) {
-        playerTroops[i].attack(enemyCastle, troopQuantities[i]);
+    // Se ataca al castillo del jugador con las tropas enemigas
+    for (int i = 0; i < enemyTroops.length; i++) {
+        enemyTroops[i].attack(playerCastle, 1);
     }
 }
-    private void enemyTurn(Troop[] enemyTroops, Castle playerCastle) {
-        // Código para que el enemigo envíe sus tropas a la batalla y ataque el castillo del jugador
+    
+    public String getPlayerTroopInfo() {
+    String info = "";
+    for (Troop troop : playerTroops) {
+        info += troop.getDescription() + "\n";
     }
+
+    return info;
+}
+    
 }
