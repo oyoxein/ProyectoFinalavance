@@ -14,7 +14,8 @@ public class Troop {
     private int damage;
     private int attackSpeed;
     private int quantity;
-
+    private int path;
+    
     public Troop(String name, int health, int damage, int attackSpeed) {
         this.name = name;
         this.health = health;
@@ -58,6 +59,15 @@ public class Troop {
     public void setQuantity(int quantity) {
         this.quantity = quantity;
     }
+    
+     public int getPath() {
+        return path;
+    }
+
+    public void setPath(int path) {
+        this.path = path;
+    }
+    
 
     public void attack(Castle target, int numTroops) {
         int totalDamage = damage * numTroops;
